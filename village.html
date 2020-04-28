@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<!-- Informatik C, Virum Gymnasium, Mia -->
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Social Distancing af Mia Dong 3a </title>
+</head>
+
+<style>
+    
+    input[type=text] {
+        padding: 5px 5px;
+        margin: 3px;
+        box-sizing: border-box;
+        border: 1px solid black;
+        border-radius: 5px;
+        font-family: "Times New Roman";
+        font-size: 15px;
+        font-weight: 3;
+    }
+
+    button[type=button] {
+        padding: 5px 5px;
+        margin: 3px;
+        box-sizing: border-box;
+        border: 1px solid black;
+        border-radius: 5px;
+        font-family: "Times New Roman";
+        font-size: 15px;
+        font-weight: 3;
+    }
+
+</style>
+
+<body>
+
+    <h1> How long will your village survive covid-19? </h1>
+
+
+
+
+
+
+    <input type="text" id="people" value=0> <button style="color:#694b1d" type=button name="knap" onclick="village()"> Village people </button>
+
+    <br><br>
+
+
+    <input type="text" id="quarantine" value=0> <button style="color:#694b1d" type=button name="knap" onclick="still()"> Quarantine people </button>
+    <br> <br>
+
+    <button style="color:#694b1d" type=button name="knap" onclick="go()"> UNLEASH PATIENT ZERO </button> 
+
+    <br><br>
+    Time count:
+    <input type="text" id="countingtime" value=0> <button style="color:#694b1d" type=button name="knap" onclick="location.reload()"> Restart simulation </button>
+    <br>
+    <br>
+    
+    <br>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <br>
+    
+    <br>
+
+
+
+
+
+
+
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        ctx.translate(0.5, 0.5); // Parallelforskydning af koordinatsystemet så linjer tegnes skarpere!
+
+        const xMax = 400;
+        const yMax = 400;
+        const radius = 4; // radius (i pixels) i de cirkler der tegnes
+
+        // Denne funktion tegner en udfyldt cirkel med centrum i (x,y) og en given farve
+        function circle(x, y, color) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // Denne metode kaldes en Constructor (opretter et objekt)
+        var Ball = function() {
+            var angle = Math.random() * 2 * Math.PI; // En tilfældig retningsvinkel
+            this.x = Math.random() * (xMax - 2 * radius) + radius; // Tilfældig x-koordinat
+            this.y = Math.random() * (yMax - 2 * radius) + radius; // Tilfældig y-koordinat
+            this.xSpeed = Math.cos(angle); // x-koordinaten til en hastighedsvektor med længden 1
+            this.ySpeed = Math.sin(angle); // y-koordinaten til en hastighedsvektor med længden 1
+            this.color = "Blue";
+        };
+
+        // Denne metode tegner cirklen
+        Ball.prototype.draw = function() {
+            circle(this.x, this.y, this.color);
+        };
+
+        // Denne metode ændrer postitionen (koordinatere til centrum)
+        Ball.prototype.move = function() {
+            this.x += this.xSpeed; // Tjek += notationen hvis du ikke kender den
+            this.y += this.ySpeed;
+        };
+
+        Ball.prototype.checkCollisionWithBoundary = function() {
+            if (this.x < radius + 1 || this.x > xMax - radius - 1) {
+                this.xSpeed = -this.xSpeed;
+            }
+            if (this.y < radius + 1 || this.y > yMax - radius - 1) {
+                this.ySpeed = -this.ySpeed;
+            }
+        };
+
+      
+
+        //funktionen forklarer hvad der skal ske, hvis boldene rammer hinanden
+        function checkContact(b1, b2) {
+
+            //phytagoras, hvis afstanden mellem koordinaterne er under 256, så skal de bounce tilbage og ændre farve.
+            if (((b1.x - b2.x) * (b1.x - b2.x) + (b1.y - b2.y) * (b1.y - b2.y)) < 256) {
+
+                b1.xSpeed = -b1.xSpeed;
+                b1.ySpeed = -b1.ySpeed;
+                b2.xSpeed = -b2.xSpeed;
+                b2.ySpeed = -b2.ySpeed;
+
+                //hvis den ene bolds farve er rød, eller den anden bolds farve er rød, i mødet mellem to bolde, vil begge bolde blive røde
+                if ((b1.color == "Red") || (b2.color == "Red")) {
+
+                    b1.color = "Red";
+                    b2.color = "Red";
+
+                }
+
+                //variablen redcount starter med at tælle fra 0
+                var redcount = 0;
+
+                //for alle bolde, fra bold 0 til det angivne antal vil der blive lagt +1 til redcount, hver gang der kommer en ny rød bold
+                for (var i = 0; i < antal; i++) {
+                    if (ball[i].color == "Red") {
+
+                        redcount = redcount + 1
+
+
+
+                    }
+                }
+
+                //denne betingelse gør, at når antallet af røde bolde er lig antallet af bolde, så vil tiden dette har taget blive skrevet i feltet under canvas, hvilket tæller tiden
+                if (redcount == antal) {
+                    //tiden regnes i sekunder
+                    //timecount tæller, hvor mange gange setInterval er kørt igennem, og denne køres igennem hver gang der er gået 5 milisekunder
+                    //dette omregnes til sekunder ved at dividere med 200
+                    document.getElementById("countingtime").value = (timecount / 200 + " " + "seconds");
+
+                    //når alle bolde er røde stopper simulationen
+                    stop();
+
+
+                }
+
+
+            }
+
+
+        }
+
+        //her defineres funktionen som stopper simulationen
+        function stop() {
+
+            clearInterval(myVar);
+
+        }
+
+        //her gøres der, så inputfeltest indtastede værdi producerer det antal bolde, der er indtastet
+        
+        var antal;
+        var ball;
+
+        function village() {
+            // antal henter dens 'value' fra inputfeltet med id = people
+            antal = document.getElementById("people").value;
+            ball = new Array(antal);
+            for (var i = 0; i < antal; i++) {
+                ball[i] = new Ball();
+                //den første bold, ball[0] er rød, da og denne er patient zero
+                ball[0].color = "Red"
+            }
+        }
+
+
+
+
+        //her oprettes mange bold-objekter og deres navne defineres
+        var ball = new Array(antal);
+
+        for (var i = 0; i < antal; i++) {
+            ball[i] = new Ball();
+            ball[0].color = "Red"
+
+
+        }
+
+
+        //denne funktion opretter de beboere i landsbyen, som er gået i karantæne
+        function still() {
+            // den værdi, der er indtastet i inputfeltet med id = quarantine, bestemmer antallet af bolde som står stille
+            // bolde der står stille er bolde i karantæne
+            for (var i = 1; i < document.getElementById("quarantine").value; i++) {
+
+                //karantæne-bolde har en hastighed på 0
+                ball[i].xSpeed = 0
+                ball[i].ySpeed = 0
+
+                //de starter med sort farve, men bliver smittet når de kommer i berøring med de smittede bolde
+                ball[i].color = "Black"
+
+            }
+        }
+
+        //variabloen timecount bestemmer at tiden tælles fra 0
+        var timecount = 0
+
+        // Her er den kode der sætter det hele igang
+        // setInterval kalder en funktionen (uden navn!) med en periode på et bestemt antal millisekunder
+
+        function go() {
+
+            myVar = setInterval(function() {
+
+                timecount = timecount + 1
+
+                ctx.clearRect(0, 0, xMax, yMax);
+                ctx.strokeStyle = "Black";
+                ctx.strokeRect(0, 0, xMax, yMax);
+
+
+                //her tegnes boldene og deres egenskaber undersøges    
+
+                for (var i = 0; i < antal; i++) {
+                    ball[i].draw();
+                    ball[i].move();
+                    ball[i].checkCollisionWithBoundary();
+                }
+
+                //her oprettes en forløkke for to variable, så man kan tjekke mødet mellem to bolde
+                for (var i = 0; i < antal; i++) {
+                    for (var j = i + 1; j < antal; j++) {
+
+                        checkContact(ball[i], ball[j]);
+
+                    }
+
+                }
+
+
+            }, 5); // Opdatér hver gang der går 5 millisekunder
+
+        }
+
+    </script>
+</body>
+
+</html>
+Skriv en besked ...
