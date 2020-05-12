@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Computerens virkemåde</title>
+</head>
+
+<body>
+    <script>
+        // RAM-lager med 100 adresser
+        var lager = new Array(100);
+        for (i = 0; i < 100; i++) {
+            lager[i] = 0
+        };
+
+        // CPU-registre
+        var OT = 0; // ordretæller (program counter)
+        var OF = 0; // ordrefortolker (instruction register)
+        var R = 0; // Regneenhedens register
+
+        // Simulation af computerens virkemåde!
+        var ordre = 0;
+        var adr = 0;
+
+        function execute() {
+            switch (ordre) {
+                case 0: // STOP
+                    break;
+                case 1: // READ
+                    lager[adr] = parseInt(prompt("Indtast et tal:"));
+                    break;
+                case 2: // WRITE
+                    document.write(lager[adr] + "<br>");
+                    break;
+                case 3: // GET
+                    R = lager[adr];
+                    break;
+                case 4: // STORE
+                    lager[adr] = R;
+                    break;
+                case 5: // ADD
+                    R = R + lager[adr];
+                    break;
+                case 6: // SUB
+                    R = R - lager[adr];
+                    break;
+                case 7: // MULT
+                    R = R * lager[adr];
+                    break;
+                case 8: // DIV
+                    R = (R - R % lager[adr]) / lager[adr];
+                    break;
+                case 9: // JMP "hop"
+                    OT = adr;
+                    break;
+                case 10: // JMPZ "hop nul"
+                    if (R == 0) {
+                        OT = adr;
+                    };
+                    break;
+                case 11: // JMPN "hop negativ"
+                    if (R < 0) {
+                        OT = adr;
+                    };
+                    break;
+            }
+        }
+
+        function fortolk() {
+            adr = OF % 100;
+            ordre = (OF - adr) / 100;
+        }
+
+        function showRegisters() {
+            document.write("OT=" + OT + "<br>");
+            document.write("OF=" + OF + "<br>");
+            document.write("R=" + R + "<br>");
+        }
+
+        function showRAM() {
+            document.write("ADDRESS:DATA<br>");
+            for (i = 0; i < 100; i++) {
+                document.write(i + ":" + lager[i] + "<br>")
+            };
+        };
+
+        // Vi skriver noget ind i RAM 
+        // Et maskinkode-program der udregner a+b*c, hvor a=5, b=2 og c=4
+        // Når STOP-ordren er udført ligger resultatet i regne-registeret R
+        lager[0] = 905;  
+        lager[1] = 1;  
+        lager[2] = 1;  
+        lager[3] = 10;  
+        lager[4] = 1;  
+        lager[5] = 303; 
+        lager[6] = 601; 
+        lager[7] = 1113;  
+        lager[8] = 201;  
+        lager[9] = 301;  
+        lager[10] = 502;  
+        lager[11] = 401; 
+        lager[12] = 905;  
+        lager[13] = 0;  
+           
+        // Intruction cycle!
+        document.write("*** RUNNING ***<br>");
+        do {
+            OF = lager[OT];
+            OT = OT + 1;
+            fortolk();
+            execute();
+        } while (ordre != 0);
+        document.write("*** STOPPED ***<br>");
+
+        //Udskriv registre
+        showRegisters();
+
+        //Udskriv RAM
+        showRAM();
+    </script>
+</body>
+
+</html>
